@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\FilterRequest;
+use App\Http\Requests\FilterEmployeeRequest;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Employee;
@@ -25,14 +25,17 @@ class EmployeeController extends Controller
      * @param FilterRequest $request
      * @return JsonResponse
      */
-    public function index(FilterRequest $request): JsonResponse
+    public function index(FilterEmployeeRequest $request): JsonResponse
     {
         $employees = Employee::with('tasks')
             ->when($request->filled('status'), fn($query) => $query->where('status', $request->status))
             ->orderBy($request->input('sort_by', 'id'), $request->input('sort_order', 'asc'))
             ->paginate(10)
-            ->appends($request->query())
-            ->except(['links', 'first_page_url', 'last_page_url', 'next_page_url', 'path', 'prev_page_url']);
+            ->appends($request->query());
+
+        $employees = collect($employees)->except([
+            'links', 'first_page_url', 'last_page_url', 'next_page_url', 'path', 'prev_page_url'
+        ]);
 
         return response()->json($employees);
     }

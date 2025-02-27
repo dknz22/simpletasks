@@ -5,9 +5,9 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Request class for filtering and sorting tasks or employees.
+ * Request class for filtering and sorting tasks.
  */
-class FilterRequest extends FormRequest
+class FilterTaskRequest extends FormRequest
 {
     /**
      * Define the validation rules for filtering and sorting.

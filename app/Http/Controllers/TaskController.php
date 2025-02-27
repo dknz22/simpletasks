@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Requests\AssignTaskRequest;
-use App\Http\Requests\FilterRequest;
+use App\Http\Requests\FilterTaskRequest;
 use App\Jobs\DeleteUnassignedTask;
 use App\Models\Task;
 use App\Notifications\TaskStatusUpdated;
@@ -26,10 +26,10 @@ class TaskController extends Controller
      * - sort_by (string, optional) - Sort by a specific field ('id', 'title', 'status', 'created_at').
      * - sort_order (string, optional) - Sorting order ('asc' or 'desc').
      *
-     * @param FilterRequest $request
+     * @param FilterTaskRequest $request
      * @return JsonResponse
      */
-    public function index(FilterRequest $request): JsonResponse
+    public function index(FilterTaskRequest $request): JsonResponse
     {
         $tasks = Task::with('employees')
             ->when($request->filled('status'), fn($query) => $query->where('status', $request->status))
@@ -37,8 +37,11 @@ class TaskController extends Controller
             ->when($request->filled('created_to'), fn($query) => $query->whereDate('created_at', '<=', $request->created_to))
             ->orderBy($request->input('sort_by', 'id'), $request->input('sort_order', 'asc'))
             ->paginate(10)
-            ->appends($request->query())
-            ->except(['links', 'first_page_url', 'last_page_url', 'next_page_url', 'path', 'prev_page_url']);
+            ->appends($request->query());
+            
+        $tasks = collect($tasks)->except([
+            'links', 'first_page_url', 'last_page_url', 'next_page_url', 'path', 'prev_page_url'
+        ]);
 
         return response()->json($tasks);
     }
