@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Requests\AssignTaskRequest;
+use App\Jobs\DeleteUnassignedTask;
 use App\Models\Task;
 
 class TaskController extends Controller
@@ -20,7 +21,11 @@ class TaskController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(StoreTaskRequest $request) {
-        return Task::create($request->validated());
+        $task = Task::create($request->validated());
+
+        DeleteUnassignedTask::dispatch($task->id)->delay(now()->addMinutes(2));
+    
+        return response()->json($task, 201);
     }
 
     /**
@@ -50,4 +55,16 @@ class TaskController extends Controller
         $task->employees()->sync($request->validated()['employee_ids']);
         return response()->json(['message' => 'Task assigned successfully']);
     }
+
+    public function groupByStatus()
+    {
+        $tasks = Task::with(['employees:id,name,email'])
+            ->get()
+            ->makeHidden(['created_at', 'updated_at'])
+            ->each(fn($task) => $task->employees->makeHidden('pivot'))
+            ->groupBy('status');
+    
+        return response()->json($tasks);
+    }       
+    
 }

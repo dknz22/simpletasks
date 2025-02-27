@@ -6,6 +6,8 @@ use App\Http\Controllers\TaskController;
 
 Route::apiResource('employees', EmployeeController::class);
 
+Route::get('/tasks/grouped', [TaskController::class, 'groupByStatus']);
+
 Route::apiResource('tasks', TaskController::class)
     ->only(['index', 'show', 'update', 'destroy']);
 
