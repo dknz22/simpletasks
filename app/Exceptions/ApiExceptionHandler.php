@@ -14,11 +14,21 @@ class ApiExceptionHandler
 {
     public static function register($exceptions)
     {
-        // Handle validation errors
+        // Handle validation errors with improved readability
         $exceptions->render(function (ValidationException $e, $request) {
+            $errors = [];
+
+            foreach ($e->errors() as $field => $messages) {
+                $cleanField = preg_replace('/\.\d+$/', '', $field);
+                if (!isset($errors[$cleanField])) {
+                    $errors[$cleanField] = [];
+                }
+                $errors[$cleanField] = array_merge($errors[$cleanField], $messages);
+            }
+
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $e->errors(),
+                'errors' => $errors,
             ], 422);
         });
 
