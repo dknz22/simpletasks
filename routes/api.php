@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\TaskController;
 
+Route::post('employees/{employee}/roles', [EmployeeController::class, 'updateRoles']);
+
 Route::apiResource('employees', EmployeeController::class);
 
 Route::get('/tasks/grouped', [TaskController::class, 'groupByStatus']);

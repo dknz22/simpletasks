@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Employee;
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,5 +25,14 @@ class EmployeeFactory extends Factory
             'email' => $this->faker->unique()->safeEmail(),
             'status' => $this->faker->randomElement(['active', 'on_leave']),
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterCreating(function (Employee $employee) {
+            $roles = Role::all();
+            $assignedRoles = $roles->random(rand(1, 2));
+            $employee->roles()->attach($assignedRoles);
+        });
     }
 }

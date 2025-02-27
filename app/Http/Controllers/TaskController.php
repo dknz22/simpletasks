@@ -5,16 +5,37 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Requests\AssignTaskRequest;
+use App\Http\Requests\FilterRequest;
 use App\Jobs\DeleteUnassignedTask;
 use App\Models\Task;
+use App\Notifications\TaskStatusUpdated;
 
 class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index() {
-        return Task::with('employees')->get();
+    public function index(FilterRequest $request) {
+        $query = Task::with('employees');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('created_from')) {
+            $query->whereDate('created_at', '>=', $request->created_from);
+        }
+        if ($request->filled('created_to')) {
+            $query->whereDate('created_at', '<=', $request->created_to);
+        }
+    
+        $sortBy = $request->input('sort_by', 'id');
+        $sortOrder = $request->input('sort_order', 'asc');
+        $query->orderBy($sortBy, $sortOrder);
+    
+        $tasks = $query->paginate(10)->appends($request->query())->toArray();
+        unset($tasks['links'], $tasks['first_page_url'], $tasks['last_page_url'], $tasks['next_page_url'], $tasks['path'], $task['prev_page_url']);
+    
+        return response()->json($tasks);
     }
 
     /**
@@ -38,9 +59,19 @@ class TaskController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTaskRequest $request, Task $task) {
+    public function update(UpdateTaskRequest $request, Task $task)
+    {
+        $oldStatus = $task->status;
+    
         $task->update($request->validated());
-        return $task;
+
+        if ($request->has('status') && in_array($task->status, ['in_progress', 'done']) && $oldStatus !== $task->status) {
+            foreach ($task->employees as $employee) {
+                $employee->notify(new TaskStatusUpdated($task));
+            }
+        }
+    
+        return response()->json($task);
     }
 
     /**
