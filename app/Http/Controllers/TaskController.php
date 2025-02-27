@@ -46,8 +46,8 @@ class TaskController extends Controller
         return response()->json(['message' => 'Task deleted']);
     }
 
-    public function assign(Task $task, AssignTaskRequest $request) {
+    public function assign(Task $task, AssignTaskRequest $request) {   
         $task->employees()->sync($request->validated()['employee_ids']);
-        return response()->json(['message' => 'Task assigned']);
+        return response()->json(['message' => 'Task assigned successfully']);
     }
 }
