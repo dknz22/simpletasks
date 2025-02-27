@@ -4,6 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Request class for validating task assignment requests.
+ */
 class AssignTaskRequest extends FormRequest
 {
     /**
@@ -13,9 +16,9 @@ class AssignTaskRequest extends FormRequest
      */
     public function rules(): array {
         return [
-            'employee_ids' => 'sometimes|array',
+            'employee_ids' => 'sometimes|array', // Optional array of employee IDs
             'employee_ids.*' => [
-                'exists:employees,id',
+                'exists:employees,id', // Ensures each ID exists in the employees table
                 function ($attribute, $value, $fail) {
                     $employee = \App\Models\Employee::find($value);
                     if ($employee && $employee->status === 'on_leave') {

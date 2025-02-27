@@ -6,6 +6,8 @@ use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
+ * Factory for generating Role model instances.
+ *
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Role>
  */
 class RoleFactory extends Factory
@@ -20,7 +22,7 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->randomElement(['Программист', 'Менеджер'])
+            'name' => $this->faker->unique()->randomElement(['Программист', 'Менеджер']) // Assign a unique role name
         ];
     }
 }

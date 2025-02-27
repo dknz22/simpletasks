@@ -9,10 +9,21 @@ use App\Models\Employee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Controller for managing employees.
+ */
 class EmployeeController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Retrieve a paginated list of employees with optional filtering and sorting.
+     *
+     * Query Parameters:
+     * - status (string, optional) - Filter by employee status ('active', 'on_leave').
+     * - sort_by (string, optional) - Sort by a specific field ('id', 'name', 'email', 'status', 'created_at').
+     * - sort_order (string, optional) - Sorting order ('asc' or 'desc').
+     *
+     * @param FilterRequest $request
+     * @return JsonResponse
      */
     public function index(FilterRequest $request): JsonResponse
     {
@@ -26,9 +37,18 @@ class EmployeeController extends Controller
         return response()->json($employees);
     }
     
-
     /**
-     * Store a newly created resource in storage.
+     * Create a new employee.
+     *
+     * Expected JSON payload:
+     * {
+     *   "name": "John Doe",
+     *   "email": "john.doe@example.com",
+     *   "status": "active" // or "on_leave"
+     * }
+     *
+     * @param StoreEmployeeRequest $request
+     * @return JsonResponse
      */
     public function store(StoreEmployeeRequest $request): JsonResponse
     {
@@ -36,8 +56,12 @@ class EmployeeController extends Controller
         return response()->json($employee, 201);
     }
 
+
     /**
-     * Display the specified resource.
+     * Retrieve a specific employee along with assigned tasks.
+     *
+     * @param Employee $employee
+     * @return JsonResponse
      */
     public function show(Employee $employee): JsonResponse
     {
@@ -45,7 +69,18 @@ class EmployeeController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update an existing employee's details.
+     *
+     * Expected JSON payload (partial update allowed):
+     * {
+     *   "name": "Updated Name", // optional
+     *   "email": "updated.email@example.com", // optional
+     *   "status": "on_leave" // optional
+     * }
+     *
+     * @param UpdateEmployeeRequest $request
+     * @param Employee $employee
+     * @return JsonResponse
      */
     public function update(UpdateEmployeeRequest $request, Employee $employee): JsonResponse
     {
@@ -54,7 +89,10 @@ class EmployeeController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete an employee.
+     *
+     * @param Employee $employee
+     * @return JsonResponse
      */
     public function destroy(Employee $employee): JsonResponse
     {
@@ -62,6 +100,18 @@ class EmployeeController extends Controller
         return response()->json(['message' => 'Employee deleted'], 200);
     }
 
+    /**
+     * Update the roles assigned to an employee.
+     *
+     * Expected JSON payload:
+     * {
+     *   "role_ids": [1, 2] // Array of role IDs
+     * }
+     *
+     * @param Request $request
+     * @param Employee $employee
+     * @return JsonResponse
+     */
     public function updateRoles(Request $request, Employee $employee): JsonResponse
     {
         $validated = $request->validate([
